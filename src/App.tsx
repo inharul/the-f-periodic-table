@@ -4,6 +4,9 @@ import { ModeToggle } from "./components/toggle-theme";
 import { ModeSize } from "./components/toggle-size";
 import { ColorPicker } from "./components/ui/colorpicker";
 import "./App.css";
+import { ToggleGroup, ToggleGroupItem } from "./components/ui/toggle-group";
+import { CheckLine, PaintBucket, SquareDashed } from "lucide-react";
+import { cn } from "./lib/utils";
 
 // 0: Alkali metals, 1: Alkaline earth metals, 2: Lanthanides, 3: Actinides, 4: Transition metals, 5: Post-transition metals, 6: Metalloids, 7: Nonmetals, 8: Halogens, 9: Noble gases
 
@@ -516,7 +519,8 @@ const PeriodicTable = () => {
   const [userInputs, setUserInputs] = useState<Record<string, string>>({});
   const [size, setSize] = useState<number>(4.5);
   const [groupColors, setGroupColors] = useState(groupBgColors);
-  const [isBorder, setIsBorder] = useState<boolean>(true);
+  const [isBorder, setIsBorder] = useState<boolean>(false);
+  const [naked, setNaked] = useState<boolean>(false);
 
   // Function to handle input change
   const handleInputChange = (symbol: string, value: string) => {
@@ -529,12 +533,27 @@ const PeriodicTable = () => {
 
   // Function to determine the border color based on the input value
   const getBorderColor = (symbol: string, value: string) => {
-    if (!isBorder) {
-      return;
+    // I want no borders or even instant correctness so I am turning off isBorder and turning naked on
+    if (naked === true && isBorder === false) return "border-transparent";
+
+    // Case 2: If isBorder is true
+    if (isBorder === true && naked === true) {
+      // If not typed yet, show gray border
+      if (!value || value.trim() === "") {
+        return "border-transparent";
+      }
+      // Show green/red for correctness
+      return value === symbol ? "border-green-500" : "border-red-500";
     }
-    if ((!value || value.trim() === "") && isBorder)
-      return "light:border-gray-300 dark:border-gray-600";
-    return value === symbol ? "border-green-500" : "border-red-500";
+
+    if (isBorder && !naked) {
+      if (!value || value.trim() === "") {
+        return "light:border-gray-300 dark:border-gray-600";
+      }
+      return value === symbol ? "border-green-500" : "border-red-500";
+    }
+
+    return "light:border-gray-300 dark:border-gray-600";
   };
 
   // Arrow key navigation handler for main table
@@ -617,24 +636,50 @@ const PeriodicTable = () => {
         <div className="flex flex-row-reverse gap-3 mr-10">
           <ModeToggle />
           <ModeSize size={size} setSize={setSize} />
-          <input
-            type="checkbox"
-            name="check"
-            id="check"
-            onChange={() =>
-              groupColors === noGroupBgColors
-                ? setGroupColors(groupBgColors)
-                : setGroupColors(noGroupBgColors)
-            }
-          />
-          <input
-            type="checkbox"
-            name="me"
-            id="me"
-            onChange={() => {
-              setIsBorder(!isBorder);
-            }}
-          />
+
+          <ToggleGroup
+            type="multiple"
+            variant="outline"
+            className="border select-none py-1"
+          >
+            <div
+              aria-label="Toggle italic"
+              onClick={() => setNaked(!naked)}
+              className={cn(
+                "flex px-3 mx-1 items-center gap-3 cursor-pointer w-full h-full rounded-md transition-all duration-200",
+                !naked ? "border bg-accent" : "border-transparent border-1"
+              )}
+            >
+              <SquareDashed className="h-4 w-4" />
+            </div>
+
+            <div
+              aria-label="Toggle check"
+              onClick={() => setIsBorder(!isBorder)}
+              className={cn(
+                "flex px-3 mx-1 items-center gap-3 cursor-pointer w-full h-full rounded-md transition-all duration-200",
+                isBorder ? "border bg-accent" : "border-transparent border-1"
+              )}
+            >
+              <CheckLine className="h-4 w-4" />
+            </div>
+            <div
+              aria-label="Toggle colors"
+              onClick={() =>
+                groupColors === noGroupBgColors
+                  ? setGroupColors(groupBgColors)
+                  : setGroupColors(noGroupBgColors)
+              }
+              className={cn(
+                "flex px-3 mx-1 items-center gap-3 cursor-pointer w-full h-full rounded-md transition-all duration-200",
+                groupColors !== noGroupBgColors
+                  ? "border bg-accent"
+                  : "border-transparent border-1"
+              )}
+            >
+              <PaintBucket className="h-4 w-4" />
+            </div>
+          </ToggleGroup>
         </div>
 
         <p className="text-center text-gray-600 mb-6">
@@ -646,7 +691,7 @@ const PeriodicTable = () => {
           {groupNames.map((name, i) => (
             <div
               key={name}
-              className={`flex items-center gap-2 px-2 py-1 rounded shadow-sm cn text-sm text-black`}
+              className={`flex items-center gap-2 px-2 py-1 rounded-md shadow-sm cn text-sm text-black`}
               style={{ "--bg": groupColors[i] } as React.CSSProperties}
             >
               <input
