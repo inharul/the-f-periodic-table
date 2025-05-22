@@ -2,11 +2,11 @@ import { useState } from "react";
 import React from "react";
 import { ModeToggle } from "./components/toggle-theme";
 import { ModeSize } from "./components/toggle-size";
-import { ColorPicker } from "./components/ui/colorpicker";
 import "./App.css";
-import { ToggleGroup, ToggleGroupItem } from "./components/ui/toggle-group";
+import { ToggleGroup } from "./components/ui/toggle-group";
 import { CheckLine, PaintBucket, SquareDashed } from "lucide-react";
 import { cn } from "./lib/utils";
+import { Progress } from "./components/ui/progress";
 
 // 0: Alkali metals, 1: Alkaline earth metals, 2: Lanthanides, 3: Actinides, 4: Transition metals, 5: Post-transition metals, 6: Metalloids, 7: Nonmetals, 8: Halogens, 9: Noble gases
 
@@ -522,6 +522,9 @@ const PeriodicTable = () => {
   const [isBorder, setIsBorder] = useState<boolean>(false);
   const [naked, setNaked] = useState<boolean>(false);
 
+  const fontColor =
+    groupColors === noGroupBgColors ? "dark:text-white" : "dark:text-black";
+
   // Function to handle input change
   const handleInputChange = (symbol: string, value: string) => {
     const capitalizedValue = value.charAt(0).toUpperCase() + value.slice(1);
@@ -630,8 +633,8 @@ const PeriodicTable = () => {
     <div className="min-h-screen bg-background text-foreground font-sans">
       <div className="w-full mx-auto">
         {/* Header */}
-        <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">
-          Periodic Table Challenge
+        <h1 className="text-3xl font-bold font-mono text-center text-gray-800 mb-6">
+          The Fucking Periodic Table
         </h1>
         <div className="flex flex-row-reverse gap-3 mr-10">
           <ModeToggle />
@@ -680,18 +683,41 @@ const PeriodicTable = () => {
               <PaintBucket className="h-4 w-4" />
             </div>
           </ToggleGroup>
+          <div className="flex justify-center items-center w-full gap-4">
+            <span className="dark:text-white light:text-white text-sm font-mono">
+              {
+                Object.values(userInputs).filter(
+                  (input, i) =>
+                    input ===
+                    correctAbbreviations[
+                      getElementIndex(Object.keys(userInputs)[i])
+                    ]
+                ).length
+              }
+              {` / 118`}
+            </span>
+            <Progress
+              className="w-[85%]"
+              value={
+                Object.values(userInputs).filter(
+                  (input, i) =>
+                    input ===
+                    correctAbbreviations[
+                      getElementIndex(Object.keys(userInputs)[i])
+                    ]
+                ).length
+              }
+              max={118}
+            />
+          </div>
         </div>
 
-        <p className="text-center text-gray-600 mb-6">
-          Type the correct element abbreviations in each box
-        </p>
-
         {/* Legend */}
-        <div className="flex flex-wrap gap-3 mb-6 justify-center">
+        <div className="flex flex-wrap gap-3 mt-6 mb-6 justify-center">
           {groupNames.map((name, i) => (
             <div
               key={name}
-              className={`flex items-center gap-2 px-2 py-1 rounded-md shadow-sm cn text-sm text-black`}
+              className={`flex items-center gap-2 px-2 py-1 rounded-md shadow-sm cn text-sm ${fontColor} transition-colors duration-300`}
               style={{ "--bg": groupColors[i] } as React.CSSProperties}
             >
               <input
@@ -738,7 +764,7 @@ const PeriodicTable = () => {
                         width: `${size}rem`,
                       } as React.CSSProperties
                     }
-                    className={`border-2 ${borderColor} cn rounded-lg text-center font-semibold text-black flex items-center justify-center transition-colors duration-300`}
+                    className={`border-2 ${borderColor} ${fontColor} cn rounded-lg text-center font-semibold text-black flex items-center justify-center transition-colors duration-300`}
                   >
                     <input
                       id={`input-${symbol}`}
@@ -749,7 +775,7 @@ const PeriodicTable = () => {
                       }
                       style={{ fontSize: `${size * 0.3}rem` }}
                       className="w-10 h-10 bg-transparent text-center font-bold focus:outline-none font-mono"
-                      maxLength={3}
+                      maxLength={2}
                       autoComplete="off"
                       onKeyDown={handleMainTableKeyDown(rowIdx, colIdx)}
                     />
@@ -780,7 +806,7 @@ const PeriodicTable = () => {
                         width: `${size}rem`,
                       } as React.CSSProperties
                     }
-                    className={`border-2 cn ${borderColor} rounded-lg w-${size} h-${size} text-center flex items-center justify-center transition-colors duration-300`}
+                    className={`border-2 cn ${borderColor} ${fontColor} rounded-lg w-${size} h-${size} text-center flex items-center justify-center transition-colors duration-300`}
                   >
                     <input
                       id={`input-${symbol}`}
@@ -791,7 +817,7 @@ const PeriodicTable = () => {
                       }
                       style={{ fontSize: `${size * 0.3}rem` }}
                       className="w-10 h-10 bg-transparent text-center focus:outline-none"
-                      maxLength={3}
+                      maxLength={2}
                       onKeyDown={handleFBlockKeyDown(
                         lanthanideSeries,
                         idx,
@@ -822,7 +848,7 @@ const PeriodicTable = () => {
                         width: `${size}rem`,
                       } as React.CSSProperties
                     }
-                    className={`border-2 cn ${borderColor} rounded-lg w-${size} h-${size} text-center font-semibold flex items-center justify-center transition-colors duration-300`}
+                    className={`border-2 cn ${borderColor} ${fontColor} rounded-lg w-${size} h-${size} text-center font-semibold flex items-center justify-center transition-colors duration-300`}
                   >
                     <input
                       id={`input-${symbol}`}
@@ -833,7 +859,7 @@ const PeriodicTable = () => {
                       }
                       style={{ fontSize: `${size * 0.3}rem` }}
                       className="w-10 h-10 bg-transparent text-center font-semibold focus:outline-none"
-                      maxLength={3}
+                      maxLength={2}
                       onKeyDown={handleFBlockKeyDown(
                         actinideSeries,
                         idx,
@@ -848,41 +874,7 @@ const PeriodicTable = () => {
         </div>
 
         {/* Progress indicator */}
-        <div className="mt-6 p-4 rounded-xl shadow-lg">
-          <div className="flex justify-between items-center">
-            <span className="text-gray-700 font-medium">Your Progress:</span>
-            <span className="text-gray-700 font-medium">
-              {
-                Object.values(userInputs).filter(
-                  (input, i) =>
-                    input ===
-                    correctAbbreviations[
-                      getElementIndex(Object.keys(userInputs)[i])
-                    ]
-                ).length
-              }{" "}
-              / 118
-            </span>
-          </div>
-          <div className="mt-2 w-full bg-gray-200 rounded-full h-2.5">
-            <div
-              className="bg-green-500 h-2.5 rounded-full"
-              style={{
-                width: `${
-                  (Object.values(userInputs).filter(
-                    (input, i) =>
-                      input ===
-                      correctAbbreviations[
-                        getElementIndex(Object.keys(userInputs)[i])
-                      ]
-                  ).length /
-                    118) *
-                  100
-                }%`,
-              }}
-            ></div>
-          </div>
-        </div>
+        <div className="mt-6 p-4 rounded-xl shadow-lg"></div>
       </div>
     </div>
   );

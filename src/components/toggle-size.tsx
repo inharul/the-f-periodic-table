@@ -23,7 +23,7 @@ export const ModeSize = ({ size, setSize }: ModeSizeProps) => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setSize(4)}>Smol</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setSize(4)}>smol</DropdownMenuItem>
         <DropdownMenuItem onClick={() => setSize(4.5)}>
           Standard
         </DropdownMenuItem>
