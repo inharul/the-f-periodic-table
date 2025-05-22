@@ -519,7 +519,7 @@ const PeriodicTable = () => {
   const [userInputs, setUserInputs] = useState<Record<string, string>>({});
   const [size, setSize] = useState<number>(4.5);
   const [groupColors, setGroupColors] = useState(groupBgColors);
-  const [isBorder, setIsBorder] = useState<boolean>(false);
+  const [isBorder, setIsBorder] = useState<boolean>(true);
   const [naked, setNaked] = useState<boolean>(false);
 
   const fontColor =
@@ -589,18 +589,19 @@ const PeriodicTable = () => {
         return;
       }
       e.preventDefault();
+      if (e.key === "ArrowDown" && rowIdx > 5) {
+        focusInput("Ce");
+        e.preventDefault();
+      }
       // Try to focus in main table
       const nextSymbol = getMainTableSymbol(nextRow, nextCol);
       if (nextSymbol) {
         focusInput(nextSymbol);
+        e.preventDefault();
+        return;
+      } else {
         return;
       }
-      // If not found, try to move to lanthanides/actinides if at La/Ac
-      if (symbol === "La" && e.key === "ArrowDown") focusInput("Ce");
-      if (symbol === "Ac" && e.key === "ArrowDown") focusInput("Th");
-      // If at top of lanthanides/actinides, move up to La/Ac
-      if (symbol === "Ce" && e.key === "ArrowUp") focusInput("La");
-      if (symbol === "Th" && e.key === "ArrowUp") focusInput("Ac");
     };
 
   // Arrow key navigation for f-blocks
@@ -613,14 +614,21 @@ const PeriodicTable = () => {
       } else if (e.key === "ArrowLeft" && idx > 0) {
         focusInput(series[idx - 1]);
         e.preventDefault();
-      } else if (e.key === "ArrowUp") {
-        // Up from Ce/Th goes to La/Ac
-        if (block === "lan") focusInput("La");
-        if (block === "act") focusInput("Ac");
+      } else if (e.key === "ArrowRight" && series[idx] == "Lu") {
+        focusInput("Hf");
+        // Press up to go to this element from f-block
         e.preventDefault();
-      } else if (e.key === "ArrowDown") {
-        // Down from lan goes to act (same idx)
-        if (block === "lan") focusInput(actinideSeries[idx]);
+      } else if (e.key === "ArrowRight" && series[idx] == "Lr") {
+        focusInput("Rf");
+        e.preventDefault();
+      } else if (e.key === "ArrowUp" && block === "lan") {
+        focusInput("Ac");
+        e.preventDefault();
+      }
+      // Up and Down navigation between f-block
+      else if (e.key === "ArrowDown" && block === "lan") {
+        // Press down to go to this idx of
+        focusInput(actinideSeries[idx]);
         e.preventDefault();
       } else if (e.key === "ArrowUp" && block === "act") {
         // Up from act goes to lan (same idx)
@@ -811,6 +819,7 @@ const PeriodicTable = () => {
                     <input
                       id={`input-${symbol}`}
                       type="text"
+                      autoComplete="off"
                       value={inputValue}
                       onChange={(e) =>
                         handleInputChange(symbol, e.target.value)
@@ -860,6 +869,7 @@ const PeriodicTable = () => {
                       style={{ fontSize: `${size * 0.3}rem` }}
                       className="w-10 h-10 bg-transparent text-center font-semibold focus:outline-none"
                       maxLength={2}
+                      autoComplete="off"
                       onKeyDown={handleFBlockKeyDown(
                         actinideSeries,
                         idx,

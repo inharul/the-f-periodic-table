@@ -13,13 +13,12 @@ type ModeSizeProps = {
   setSize: React.Dispatch<React.SetStateAction<number>>;
 };
 
-export const ModeSize = ({ size, setSize }: ModeSizeProps) => {
+export const ModeSize = ({ setSize }: ModeSizeProps) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon" className="w-15">
+        <Button variant="outline" size="icon" className="w-10 cursor-pointer">
           <AArrowUp className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all" />
-          <span>{size}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
