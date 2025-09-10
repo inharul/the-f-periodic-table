@@ -5,522 +5,51 @@ import { ModeSize } from "./components/toggle-size";
 import "./App.css";
 import { ToggleGroup } from "./components/ui/toggle-group";
 import { CheckLine, PaintBucket, SquareDashed } from "lucide-react";
-import { cn } from "./lib/utils";
+import { cn, formatCountdown } from "./lib/utils";
 import { Progress } from "./components/ui/progress";
 
-// 0: Alkali metals, 1: Alkaline earth metals, 2: Lanthanides, 3: Actinides, 4: Transition metals, 5: Post-transition metals, 6: Metalloids, 7: Nonmetals, 8: Halogens, 9: Noble gases
+import {
+  correctAbbreviations,
+  groupBgColors,
+  groupNames,
+  noGroupBgColors,
+} from "./data";
 
-const elementGroups = [
-  // 1-10
-  7, // 0: H - Nonmetal
-  9, // 1: He - Noble gas
-  0, // 2: Li - Alkali metal
-  1, // 3: Be - Alkaline earth metal
-  6, // 4: B - Metalloid
-  7, // 5: C - Nonmetal
-  7, // 6: N - Nonmetal
-  7, // 7: O - Nonmetal
-  8, // 8: F - Halogen
-  9, // 9: Ne - Noble gas
+import { durationAtom, isBorderAtom, nakedAtom } from "./global";
 
-  // 11-20
-  0, // 10: Na - Alkali metal
-  1, // 11: Mg - Alkaline earth metal
-  5, // 12: Al - Post-transition metal
-  6, // 13: Si - Metalloid
-  7, // 14: P - Nonmetal
-  7, // 15: S - Nonmetal
-  8, // 16: Cl - Halogen
-  9, // 17: Ar - Noble gas
-  0, // 18: K - Alkali metal
-  1, // 19: Ca - Alkaline earth metal
-
-  // 21-30
-  4, // 20: Sc - Transition metal
-  4, // 21: Ti - Transition metal
-  4, // 22: V - Transition metal
-  4, // 23: Cr - Transition metal
-  4, // 24: Mn - Transition metal
-  4, // 25: Fe - Transition metal
-  4, // 26: Co - Transition metal
-  4, // 27: Ni - Transition metal
-  4, // 28: Cu - Transition metal
-  4, // 29: Zn - Transition metal
-
-  // 31-40
-  5, // 30: Ga - Post-transition metal
-  6, // 31: Ge - Metalloid
-  6, // 32: As - Metalloid
-  7, // 33: Se - Nonmetal
-  8, // 34: Br - Halogen
-  9, // 35: Kr - Noble gas
-  0, // 36: Rb - Alkali metal
-  1, // 37: Sr - Alkaline earth metal
-  4, // 38: Y - Transition metal
-  4, // 39: Zr - Transition metal
-
-  // 41-50
-  4, // 40: Nb - Transition metal
-  4, // 41: Mo - Transition metal
-  4, // 42: Tc - Transition metal
-  4, // 43: Ru - Transition metal
-  4, // 44: Rh - Transition metal
-  4, // 45: Pd - Transition metal
-  4, // 46: Ag - Transition metal
-  4, // 47: Cd - Transition metal
-  5, // 48: In - Post-transition metal
-  5, // 49: Sn - Post-transition metal
-
-  // 51-60
-  6, // 50: Sb - Metalloid
-  6, // 51: Te - Metalloid
-  8, // 52: I - Halogen
-  9, // 53: Xe - Noble gas
-  0, // 54: Cs - Alkali metal
-  1, // 55: Ba - Alkaline earth metal
-  2, // 56: La - Lanthanide
-  2, // 57: Ce - Lanthanide
-  2, // 58: Pr - Lanthanide
-  2, // 59: Nd - Lanthanide
-
-  // 61-70
-  2, // 60: Pm - Lanthanide
-  2, // 61: Sm - Lanthanide
-  2, // 62: Eu - Lanthanide
-  2, // 63: Gd - Lanthanide
-  2, // 64: Tb - Lanthanide
-  2, // 65: Dy - Lanthanide
-  2, // 66: Ho - Lanthanide
-  2, // 67: Er - Lanthanide
-  2, // 68: Tm - Lanthanide
-  2, // 69: Yb - Lanthanide
-
-  // 71-80
-  2, // 70: Lu - Lanthanide
-  4, // 71: Hf - Transition metal
-  4, // 72: Ta - Transition metal
-  4, // 73: W - Transition metal
-  4, // 74: Re - Transition metal
-  4, // 75: Os - Transition metal
-  4, // 76: Ir - Transition metal
-  4, // 77: Pt - Transition metal
-  4, // 78: Au - Transition metal
-  4, // 79: Hg - Transition metal
-
-  // 81-90
-  5, // 80: Tl - Post-transition metal
-  5, // 81: Pb - Post-transition metal
-  5, // 82: Bi - Metalloid
-  6, // 83: Po - Metalloid
-  8, // 84: At - Halogen
-  9, // 85: Rn - Noble gas
-  0, // 86: Fr - Alkali metal
-  1, // 87: Ra - Alkaline earth metal
-  3, // 88: Ac - Actinide
-  3, // 89: Th - Actinide
-
-  // 91-100
-  3, // 90: Pa - Actinide
-  3, // 91: U - Actinide
-  3, // 92: Np - Actinide
-  3, // 93: Pu - Actinide
-  3, // 94: Am - Actinide
-  3, // 95: Cm - Actinide
-  3, // 96: Bk - Actinide
-  3, // 97: Cf - Actinide
-  3, // 98: Es - Actinide
-  3, // 99: Fm - Actinide
-
-  // 101-110
-  3, // 100: Md - Actinide
-  3, // 101: No - Actinide
-  3, // 102: Lr - Actinide
-  4, // 103: Rf - Transition metal
-  4, // 104: Db - Transition metal
-  4, // 105: Sg - Transition metal
-  4, // 106: Bh - Transition metal
-  4, // 107: Hs - Transition metal
-  4, // 108: Mt - Post-transition metal
-  4, // 109: Ds - Post-transition metal
-
-  // 111-118
-  4, // 110: Rg - Post-transition metal
-  4, // 111: Cn - Post-transition metal
-  10, // 112: Nh - Post-transition metal
-  10, // 113: Fl - Post-transition metal
-  10, // 114: Mc - Post-transition metal
-  10, // 115: Lv - Halogen
-  10, // 116: Ts
-  10, // 118: Og
-];
-
-const groupBgColors = [
-  "#fde047", // bg-yellow-300 - Alkali metals
-  "#fca5a5", // bg-red-300 - Alkaline earth metals
-  "#f9a8d4", // bg-pink-300 - Lanthanides
-  "#fdba74", // bg-orange-300 - Actinides
-  "#60a5fa", // bg-blue-400 - Transition metals
-  "#14b8a6", // bg-teal-500 - Post-transition metals
-  "#22c55e", // bg-green-500 - Metalloids
-  "#d1d5db", // bg-gray-300 - Nonmetals
-  "#7dd3fc", // bg-sky-300 - Halogens
-  "#fde68a", // bg-yellow-400 - Noble gases
-  "#a78bfa", // bg-purple-400 - Unknown Elements
-];
-
-const noGroupBgColors = new Array(11).fill("#FFFFFF00");
-
-const groupNames = [
-  "Alkali metals",
-  "Alkaline earth metals",
-  "Lanthanides",
-  "Actinides",
-  "Transition metals",
-  "Post-transition metals",
-  "Metalloids",
-  "Nonmetals",
-  "Halogens",
-  "Noble gases",
-  "Unknown Elements",
-];
-
-const correctAbbreviations = [
-  "H",
-  "He",
-  "Li",
-  "Be",
-  "B",
-  "C",
-  "N",
-  "O",
-  "F",
-  "Ne",
-  "Na",
-  "Mg",
-  "Al",
-  "Si",
-  "P",
-  "S",
-  "Cl",
-  "Ar",
-  "K",
-  "Ca",
-  "Sc",
-  "Ti",
-  "V",
-  "Cr",
-  "Mn",
-  "Fe",
-  "Co",
-  "Ni",
-  "Cu",
-  "Zn",
-  "Ga",
-  "Ge",
-  "As",
-  "Se",
-  "Br",
-  "Kr",
-  "Rb",
-  "Sr",
-  "Y",
-  "Zr",
-  "Nb",
-  "Mo",
-  "Tc",
-  "Ru",
-  "Rh",
-  "Pd",
-  "Ag",
-  "Cd",
-  "In",
-  "Sn",
-  "Sb",
-  "Te",
-  "I",
-  "Xe",
-  "Cs",
-  "Ba",
-  "La",
-  "Ce",
-  "Pr",
-  "Nd",
-  "Pm",
-  "Sm",
-  "Eu",
-  "Gd",
-  "Tb",
-  "Dy",
-  "Ho",
-  "Er",
-  "Tm",
-  "Yb",
-  "Lu",
-  "Hf",
-  "Ta",
-  "W",
-  "Re",
-  "Os",
-  "Ir",
-  "Pt",
-  "Au",
-  "Hg",
-  "Tl",
-  "Pb",
-  "Bi",
-  "Po",
-  "At",
-  "Rn",
-  "Fr",
-  "Ra",
-  "Ac",
-  "Th",
-  "Pa",
-  "U",
-  "Np",
-  "Pu",
-  "Am",
-  "Cm",
-  "Bk",
-  "Cf",
-  "Es",
-  "Fm",
-  "Md",
-  "No",
-  "Lr",
-  "Rf",
-  "Db",
-  "Sg",
-  "Bh",
-  "Hs",
-  "Mt",
-  "Ds",
-  "Rg",
-  "Cn",
-  "Nh",
-  "Fl",
-  "Mc",
-  "Lv",
-  "Ts",
-  "Og",
-];
-
-// Main table structure based on provided layout
-const mainTable = [
-  // Row 1
-  [
-    "H",
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    "He",
-  ],
-  // Row 2
-  [
-    "Li",
-    "Be",
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    "B",
-    "C",
-    "N",
-    "O",
-    "F",
-    "Ne",
-  ],
-  // Row 3
-  [
-    "Na",
-    "Mg",
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    "Al",
-    "Si",
-    "P",
-    "S",
-    "Cl",
-    "Ar",
-  ],
-  // Row 4
-  [
-    "K",
-    "Ca",
-    "Sc",
-    "Ti",
-    "V",
-    "Cr",
-    "Mn",
-    "Fe",
-    "Co",
-    "Ni",
-    "Cu",
-    "Zn",
-    "Ga",
-    "Ge",
-    "As",
-    "Se",
-    "Br",
-    "Kr",
-  ],
-  // Row 5
-  [
-    "Rb",
-    "Sr",
-    "Y",
-    "Zr",
-    "Nb",
-    "Mo",
-    "Tc",
-    "Ru",
-    "Rh",
-    "Pd",
-    "Ag",
-    "Cd",
-    "In",
-    "Sn",
-    "Sb",
-    "Te",
-    "I",
-    "Xe",
-  ],
-  // Row 6
-  [
-    "Cs",
-    "Ba",
-    "La",
-    "Hf",
-    "Ta",
-    "W",
-    "Re",
-    "Os",
-    "Ir",
-    "Pt",
-    "Au",
-    "Hg",
-    "Tl",
-    "Pb",
-    "Bi",
-    "Po",
-    "At",
-    "Rn",
-  ],
-  // Row 7
-  [
-    "Fr",
-    "Ra",
-    "Ac",
-    "Rf",
-    "Db",
-    "Sg",
-    "Bh",
-    "Hs",
-    "Mt",
-    "Ds",
-    "Rg",
-    "Cn",
-    "Nh",
-    "Fl",
-    "Mc",
-    "Lv",
-    "Ts",
-    "Og",
-  ],
-];
-
-// Lanthanide series
-const lanthanideSeries = [
-  "La",
-  "Ce",
-  "Pr",
-  "Nd",
-  "Pm",
-  "Sm",
-  "Eu",
-  "Gd",
-  "Tb",
-  "Dy",
-  "Ho",
-  "Er",
-  "Tm",
-  "Yb",
-  "Lu",
-];
-
-// Actinide series
-const actinideSeries = [
-  "Ac",
-  "Th",
-  "Pa",
-  "U",
-  "Np",
-  "Pu",
-  "Am",
-  "Cm",
-  "Bk",
-  "Cf",
-  "Es",
-  "Fm",
-  "Md",
-  "No",
-  "Lr",
-];
-
-// Function to get element index from symbol
-const getElementIndex = (symbol: string) => {
-  return correctAbbreviations.findIndex((abbr) => abbr === symbol);
-};
-
-// Helper to get symbol at a given main table position
-const getMainTableSymbol = (row: number, col: number) => {
-  if (row < 0 || row >= mainTable.length) return null;
-  if (col < 0 || col >= mainTable[row].length) return null;
-  return mainTable[row][col];
-};
-
-// Helper to focus an input by symbol
-const focusInput = (symbol: string) => {
-  const el = document.getElementById(
-    `input-${symbol}`
-  ) as HTMLInputElement | null;
-  if (el) el.focus();
-};
+import { useAtom, useAtomValue } from "jotai";
+import { timeAtom } from "./machine";
+import { Dialog, DialogContent, DialogTrigger } from "./components/ui/dialog";
+import { Levels } from "./components/Levels";
+import { useTheme } from "./components/theme-provider";
+import { TextRoll } from "./components/ui/textShimmer";
+import { motion, AnimatePresence } from "motion/react";
+import { getElementIndex, registerInputRefs } from "./lib/helpers";
+import Table from "./Table";
+import { Rnd } from "react-rnd";
+import {
+  DialogOverlay,
+  DialogPortal,
+  DialogClose,
+} from "@radix-ui/react-dialog";
 
 const PeriodicTable = () => {
   // Create a state to track user inputs for all elements
   const [userInputs, setUserInputs] = useState<Record<string, string>>({});
-  const [size, setSize] = useState<number>(4.5);
+  const inputRefs = React.useRef<Record<string, HTMLInputElement | null>>({});
+
+  React.useEffect(() => {
+    registerInputRefs(inputRefs);
+    inputRefs.current["H"]?.focus();
+  }, []);
+
   const [groupColors, setGroupColors] = useState(groupBgColors);
-  const [isBorder, setIsBorder] = useState<boolean>(true);
-  const [naked, setNaked] = useState<boolean>(false);
+
+  const [isBorder, setIsBorder] = useAtom(isBorderAtom);
+  const [naked, setNaked] = useAtom(nakedAtom);
+
+  const [state, send] = useAtom(timeAtom);
+  const duration = useAtomValue(durationAtom);
 
   const fontColor =
     groupColors === noGroupBgColors ? "dark:text-white" : "dark:text-black";
@@ -534,119 +63,79 @@ const PeriodicTable = () => {
     });
   };
 
-  // Function to determine the border color based on the input value
-  const getBorderColor = (symbol: string, value: string) => {
-    // I want no borders or even instant correctness so I am turning off isBorder and turning naked on
-    if (naked === true && isBorder === false) return "border-transparent";
-
-    // Case 2: If isBorder is true
-    if (isBorder === true && naked === true) {
-      // If not typed yet, show gray border
-      if (!value || value.trim() === "") {
-        return "border-transparent";
-      }
-      // Show green/red for correctness
-      return value === symbol ? "border-green-500" : "border-red-500";
-    }
-
-    if (isBorder && !naked) {
-      if (!value || value.trim() === "") {
-        return "light:border-gray-300 dark:border-gray-600";
-      }
-      return value === symbol ? "border-green-500" : "border-red-500";
-    }
-
-    return "light:border-gray-300 dark:border-gray-600";
-  };
-
-  // Arrow key navigation handler for main table
-  const handleMainTableKeyDown =
-    (rowIdx: number, colIdx: number) =>
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
-      const symbol = mainTable[rowIdx][colIdx];
-      if (!symbol) return;
-      let nextRow = rowIdx;
-      let nextCol = colIdx;
-      if (e.key === "ArrowRight") {
-        do {
-          nextCol++;
-        } while (nextCol < 18 && !getMainTableSymbol(rowIdx, nextCol));
-      } else if (e.key === "ArrowLeft") {
-        do {
-          nextCol--;
-        } while (nextCol >= 0 && !getMainTableSymbol(rowIdx, nextCol));
-      } else if (e.key === "ArrowDown") {
-        do {
-          nextRow++;
-        } while (nextRow < 7 && !getMainTableSymbol(nextRow, colIdx));
-        nextCol = colIdx;
-      } else if (e.key === "ArrowUp") {
-        do {
-          nextRow--;
-        } while (nextRow >= 0 && !getMainTableSymbol(nextRow, colIdx));
-        nextCol = colIdx;
-      } else {
-        return;
-      }
-      e.preventDefault();
-      if (e.key === "ArrowDown" && rowIdx > 5) {
-        focusInput("Ce");
-        e.preventDefault();
-      }
-      // Try to focus in main table
-      const nextSymbol = getMainTableSymbol(nextRow, nextCol);
-      if (nextSymbol) {
-        focusInput(nextSymbol);
-        e.preventDefault();
-        return;
-      } else {
-        return;
-      }
-    };
-
-  // Arrow key navigation for f-blocks
-  const handleFBlockKeyDown =
-    (series: string[], idx: number, block: "lan" | "act") =>
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === "ArrowRight" && idx < series.length - 1) {
-        focusInput(series[idx + 1]);
-        e.preventDefault();
-      } else if (e.key === "ArrowLeft" && idx > 0) {
-        focusInput(series[idx - 1]);
-        e.preventDefault();
-      } else if (e.key === "ArrowRight" && series[idx] == "Lu") {
-        focusInput("Hf");
-        // Press up to go to this element from f-block
-        e.preventDefault();
-      } else if (e.key === "ArrowRight" && series[idx] == "Lr") {
-        focusInput("Rf");
-        e.preventDefault();
-      } else if (e.key === "ArrowUp" && block === "lan") {
-        focusInput("Ac");
-        e.preventDefault();
-      }
-      // Up and Down navigation between f-block
-      else if (e.key === "ArrowDown" && block === "lan") {
-        // Press down to go to this idx of
-        focusInput(actinideSeries[idx]);
-        e.preventDefault();
-      } else if (e.key === "ArrowUp" && block === "act") {
-        // Up from act goes to lan (same idx)
-        focusInput(lanthanideSeries[idx]);
-        e.preventDefault();
-      }
-    };
+  const { theme } = useTheme();
+  const [completedIntroduction, setIntroduction] = useState(false);
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans">
+      {state.value == "completed" && (
+        <div className="fixed bg-white/50 h-screen w-screen grid place-items-center z-40">
+          <Rnd
+            default={{
+              x: 0,
+              y: 0,
+              width: 320,
+              height: 200,
+            }}
+            bounds="window"
+            className="bg-white ring rounded-2xl z-50 absolute"
+            dragHandleClassName="handle"
+          >
+            <div className="w-full bg-white/20 handle h-10"></div>
+            rand
+          </Rnd>
+        </div>
+      )}
+      <div className="w-full text-center h-10 py-2">
+        <AnimatePresence>
+          {!completedIntroduction && (
+            <motion.div
+              initial={{ opacity: 0, y: -30 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -30 }}
+            >
+              <TextRoll
+                className="text-lg pixel text-black dark:text-white"
+                onAnimationComplete={() =>
+                  setIntroduction(!completedIntroduction)
+                }
+              >
+                The fucking Periodc Table
+              </TextRoll>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
       <div className="w-full mx-auto">
         {/* Header */}
         <h1 className="text-3xl font-bold font-mono text-center text-gray-800 mb-6">
-          The Fucking Periodic Table
+          {formatCountdown(duration, state.context.elapsed)} {state.value}
+          <button
+            onClick={() =>
+              send({ type: state.value == "paused" ? "START" : "STOP" })
+            }
+          >
+            click
+          </button>
+          <Dialog>
+            <DialogTrigger>Open</DialogTrigger>
+            <DialogContent
+              className={cn(
+                " w-[90vw]",
+                theme == "dark" ? "shadow-6" : "shadow-none"
+              )}
+              onCloseAutoFocus={(e) => {
+                e.preventDefault();
+                inputRefs.current["Th"]?.focus();
+              }}
+            >
+              <Levels />
+            </DialogContent>
+          </Dialog>
         </h1>
         <div className="flex flex-row-reverse gap-3 mr-10">
           <ModeToggle />
-          <ModeSize size={size} setSize={setSize} />
+          <ModeSize />
 
           <ToggleGroup
             type="multiple"
@@ -744,144 +233,12 @@ const PeriodicTable = () => {
         </div>
 
         {/* Main Periodic Table */}
-        <div className="rounded-xl grid px-4 py-4 justify-items-center items-center overflow-x-auto">
-          {mainTable.map((row, rowIdx) => (
-            <div className="flex gap-1 mb-1" key={`period-${rowIdx}`}>
-              {row.map((symbol, colIdx) => {
-                if (symbol === null)
-                  return (
-                    <div
-                      key={`empty-${rowIdx}-${colIdx}`}
-                      style={{
-                        height: `${size}rem`,
-                        width: `${size}rem`,
-                      }}
-                    />
-                  );
-                const elementIdx = getElementIndex(symbol);
-                const inputValue = userInputs[symbol] || "";
-                const borderColor = getBorderColor(symbol, inputValue);
-
-                return (
-                  <div
-                    key={`${rowIdx}-${colIdx}`}
-                    style={
-                      {
-                        "--bg": groupColors[elementGroups[elementIdx]],
-                        height: `${size}rem`,
-                        width: `${size}rem`,
-                      } as React.CSSProperties
-                    }
-                    className={`border-2 ${borderColor} ${fontColor} cn rounded-lg text-center font-semibold text-black flex items-center justify-center transition-colors duration-300`}
-                  >
-                    <input
-                      id={`input-${symbol}`}
-                      type="text"
-                      value={inputValue}
-                      onChange={(e) =>
-                        handleInputChange(symbol, e.target.value)
-                      }
-                      style={{ fontSize: `${size * 0.3}rem` }}
-                      className="w-10 h-10 bg-transparent text-center font-bold focus:outline-none font-mono"
-                      maxLength={2}
-                      autoComplete="off"
-                      onKeyDown={handleMainTableKeyDown(rowIdx, colIdx)}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          ))}
-        </div>
-
-        {/* Lanthanides and Actinides */}
-        <div className="mt-6 rounded-xl p-4 overflow-x-auto grid justify-items-center items-center text-black font-mono font-bold">
-          <div className="mb-4 ">
-            <div className="text-sm text-gray-600 mb-1 ml-2">Lanthanides:</div>
-            <div className="flex gap-1">
-              {lanthanideSeries.map((symbol, idx) => {
-                const elementIdx = getElementIndex(symbol);
-                const inputValue = userInputs[symbol] || "";
-                const borderColor = getBorderColor(symbol, inputValue);
-
-                return (
-                  <div
-                    key={`lanthanide-${symbol}`}
-                    style={
-                      {
-                        "--bg": groupColors[elementGroups[elementIdx]],
-                        height: `${size}rem`,
-                        width: `${size}rem`,
-                      } as React.CSSProperties
-                    }
-                    className={`border-2 cn ${borderColor} ${fontColor} rounded-lg w-${size} h-${size} text-center flex items-center justify-center transition-colors duration-300`}
-                  >
-                    <input
-                      id={`input-${symbol}`}
-                      type="text"
-                      autoComplete="off"
-                      value={inputValue}
-                      onChange={(e) =>
-                        handleInputChange(symbol, e.target.value)
-                      }
-                      style={{ fontSize: `${size * 0.3}rem` }}
-                      className="w-10 h-10 bg-transparent text-center focus:outline-none"
-                      maxLength={2}
-                      onKeyDown={handleFBlockKeyDown(
-                        lanthanideSeries,
-                        idx,
-                        "lan"
-                      )}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div>
-            <div className="text-sm text-gray-600 mb-1 ml-2">Actinides:</div>
-            <div className="flex gap-1">
-              {actinideSeries.map((symbol, idx) => {
-                const elementIdx = getElementIndex(symbol);
-                const inputValue = userInputs[symbol] || "";
-                const borderColor = getBorderColor(symbol, inputValue);
-
-                return (
-                  <div
-                    key={`actinide-${symbol}`}
-                    style={
-                      {
-                        "--bg": groupColors[elementGroups[elementIdx]],
-                        height: `${size}rem`,
-                        width: `${size}rem`,
-                      } as React.CSSProperties
-                    }
-                    className={`border-2 cn ${borderColor} ${fontColor} rounded-lg w-${size} h-${size} text-center font-semibold flex items-center justify-center transition-colors duration-300`}
-                  >
-                    <input
-                      id={`input-${symbol}`}
-                      type="text"
-                      value={inputValue}
-                      onChange={(e) =>
-                        handleInputChange(symbol, e.target.value)
-                      }
-                      style={{ fontSize: `${size * 0.3}rem` }}
-                      className="w-10 h-10 bg-transparent text-center font-semibold focus:outline-none"
-                      maxLength={2}
-                      autoComplete="off"
-                      onKeyDown={handleFBlockKeyDown(
-                        actinideSeries,
-                        idx,
-                        "act"
-                      )}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
+        <Table
+          groupColors={groupColors}
+          handleInputChange={handleInputChange}
+          userInputs={userInputs}
+          inputRefs={inputRefs}
+        />
 
         {/* Progress indicator */}
         <div className="mt-6 p-4 rounded-xl shadow-lg"></div>

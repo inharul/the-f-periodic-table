@@ -7,13 +7,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useSetAtom } from "jotai";
+import { elementFontSize } from "@/global";
 
-type ModeSizeProps = {
-  size: number;
-  setSize: React.Dispatch<React.SetStateAction<number>>;
-};
-
-export const ModeSize = ({ setSize }: ModeSizeProps) => {
+export const ModeSize = () => {
+  const setSize = useSetAtom(elementFontSize);
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
