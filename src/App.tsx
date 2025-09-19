@@ -27,11 +27,6 @@ import { motion, AnimatePresence } from "motion/react";
 import { getElementIndex, registerInputRefs } from "./lib/helpers";
 import Table from "./Table";
 import { Rnd } from "react-rnd";
-import {
-  DialogOverlay,
-  DialogPortal,
-  DialogClose,
-} from "@radix-ui/react-dialog";
 
 const PeriodicTable = () => {
   // Create a state to track user inputs for all elements
